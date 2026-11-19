@@ -347,7 +347,7 @@ credits: state.credits - repairFee,
 docked: true,
 ship: { xQ16: toQ16(100), yQ16: toQ16(210), vxQ16: 0, vyQ16: 0, headingRad: 0, shield: maxShield },
 enemyShots: [],
-lastEventLog: EMERGENCY TOW: Shields depleted! Rescued to ${} Station (-${repairFee} CR).,
+lastEventLog: "EMERGENCY TOW: Shields depleted! Rescued to " + state.system.name + " Station (-" + repairFee + " CR).",
 };
 }
 return {
