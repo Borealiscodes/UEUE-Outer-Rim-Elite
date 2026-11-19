@@ -1,9 +1,3 @@
-/**
- * src/elite-app.js — UEUE Outer Rim Elite Loop, Station Trading & Sleeve/Hull Controls
- *
- * Signed-off-by: Borealis Serenity Hedling <chguard-sentinel@vaked.dev>
- */
-
 import { toQ16, fromQ16 } from "./core.js";
 import {
   STAR_SYSTEMS,
@@ -61,17 +55,23 @@ function initEliteApp() {
   let steerTarget = null;
   const keys = new Set();
 
-  const renderStationPanels = () => {
+  const renderTopHudOnly = () => {
     const used = getCargoUsed(state.cargo);
-    if (hudCredits) hudCredits.textContent = `Credits: ${state.credits} CR | Cargo: ${used}/${state.hull.cargoCap}t`;
+    const maxShield = getEffectiveMaxShield(state);
+    if (hudCredits) {
+      hudCredits.textContent = `Credits: ${state.credits} CR | Shield: ${state.ship.shield}/${maxShield} | Cargo: ${used}/${state.hull.cargoCap}t`;
+    }
+    if (eventLogEl) eventLogEl.textContent = state.lastEventLog;
+  };
+
+  const renderStationPanels = () => {
+    renderTopHudOnly();
     if (hudSystem) hudSystem.textContent = `System: ${state.system.name}`;
     if (hudLoadout) hudLoadout.textContent = `Hull: ${state.hull.name} | Sleeve: ${state.sleeve.name}`;
-    if (eventLogEl) eventLogEl.textContent = state.lastEventLog;
     if (dockBtn) dockBtn.textContent = state.docked ? "🚀 Launch to Space" : "🛰️ Dock at Station";
     if (sphereBtn) sphereBtn.textContent = state.sphereMode ? "✨ Sphere Mode: ON" : "✨ Sphere Mode: OFF";
     if (stanceBtn) stanceBtn.textContent = `⚔️ Stance: ${state.stance.label}`;
 
-    // 1. Commodity Market
     if (marketListEl) {
       marketListEl.innerHTML = COMMODITIES.map((c) => {
         const price = getCommodityPrice(state, c.id);
@@ -101,7 +101,6 @@ function initEliteApp() {
       });
     }
 
-    // 2. Ship Hulls
     if (shipyardListEl) {
       shipyardListEl.innerHTML = SHIP_HULLS.map((h) => {
         const active = h.id === state.hull.id;
@@ -123,7 +122,6 @@ function initEliteApp() {
       });
     }
 
-    // 3. Transhuman Pilot Sleeves (L2/L6)
     if (sleeveListEl) {
       sleeveListEl.innerHTML = PILOT_SLEEVES.map((s) => {
         const active = s.id === state.sleeve.id;
@@ -145,7 +143,6 @@ function initEliteApp() {
       });
     }
 
-    // 4. 5-System Hyperspace Jump Map
     if (galaxyListEl) {
       galaxyListEl.innerHTML = STAR_SYSTEMS.map((sys, idx) => {
         const here = idx === state.systemIndex;
@@ -165,7 +162,6 @@ function initEliteApp() {
       });
     }
 
-    // 5. Faction Standing Matrix (L4)
     if (factionListEl) {
       factionListEl.innerHTML = FACTIONS.map((f) => {
         const rep = state.reputation[f.id] || 0;
@@ -251,6 +247,7 @@ function initEliteApp() {
     lastTime = now;
 
     while (accumulator >= FIXED_DT_MS) {
+      const wasDocked = state.docked;
       let tx = 0;
       let ty = 0;
 
@@ -267,10 +264,13 @@ function initEliteApp() {
       }
 
       state = stepEliteFrame(state, toQ16(tx), toQ16(ty));
+      if (!wasDocked && state.docked) {
+        renderStationPanels(); // Refresh station buttons immediately on emergency tow!
+      }
       accumulator -= FIXED_DT_MS;
     }
 
-    renderStationPanels();
+    renderTopHudOnly();
     if (ctx) renderSpaceSector(ctx, state);
     requestAnimationFrame(loop);
   }
