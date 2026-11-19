@@ -287,78 +287,89 @@ export function stepEliteFrame(state, thrustXQ16 = 0, thrustYQ16 = 0) {
   const dtQ16 = toQ16(1.0 / 60.0);
   const dampQ16 = toQ16(0.94);
 
-  let vx = qMul(qAdd(state.ship.vxQ16, qMul(thrustXQ16, dtQ16)), dampQ16);
-  let vy = qMul(qAdd(state.ship.vyQ16, qMul(thrustYQ16, dtQ16)), dampQ16);
-  let x = qAdd(state.ship.xQ16, qMul(vx, dtQ16));
-  let y = qAdd(state.ship.yQ16, qMul(vy, dtQ16));
+  const vx = qMul(qAdd(state.ship.vxQ16, qMul(thrustXQ16, dtQ16)), dampQ16);
+  const vy = qMul(qAdd(state.ship.vyQ16, qMul(thrustYQ16, dtQ16)), dampQ16);
+  const rawX = qAdd(state.ship.xQ16, qMul(vx, dtQ16));
+  const rawY = qAdd(state.ship.yQ16, qMul(vy, dtQ16));
 
-  const fx = Math.max(30, Math.min(SECTOR_W - 30, fromQ16(x)));
-  const fy = Math.max(30, Math.min(SECTOR_H - 30, fromQ16(y)));
-  x = toQ16(fx);
-  y = toQ16(fy);
+  const fx = Math.max(30, Math.min(SECTOR_W - 30, fromQ16(rawX)));
+  const fy = Math.max(30, Math.min(SECTOR_H - 30, fromQ16(rawY)));
+  const x = toQ16(fx);
+  const y = toQ16(fy);
 
-const speed = Math.hypot(fromQ16(vx), fromQ16(vy));
-const headingRad = speed > 3 ? Math.atan2(fromQ16(vy), fromQ16(vx)) : state.ship.headingRad;
-const nextAsteroids = ((ast) => {
-let ax = fromQ16(qAdd(ast.xQ16, qMul(ast.vxQ16, dtQ16)));
-let ay = fromQ16(qAdd(ast.yQ16, qMul(ast.vyQ16, dtQ16)));
-if (ax < 30) ax += SECTOR_W - 60;
-if (ax > SECTOR_W - 30) ax -= SECTOR_W - 60;
-if (ay < 30) ay += SECTOR_H - 60;
-if (ay > SECTOR_H - 30) ay -= SECTOR_H - 60;
-return { ...ast, xQ16: toQ16(ax), yQ16: toQ16(ay) };
-});
-let shield = state.ship.shield;
-let log = state.lastEventLog;
-const nextShots = state.enemyShots
-.map((s) => ({ ...s, ticks: s.ticks - 1 }))
-.filter((s) => s.ticks > 0);
-const nextRaiders = ((r) => {
-let rx = fromQ16(r.xQ16);
-let ry = fromQ16(r.yQ16);
-const dx = fx - rx;
-const dy = fy - ry;
-const dist = Math.hypot(dx, dy);
-if (dist < 260 && dist > 68) {
-const chaseSpeed = state.sphereMode ? 1.15 : 0.85;
-rx += (dx / dist) * chaseSpeed;
-ry += (dy / dist) * chaseSpeed;
+  const speed = Math.hypot(fromQ16(vx), fromQ16(vy));
+  const headingRad = speed > 3 ? Math.atan2(fromQ16(vy), fromQ16(vx)) : state.ship.headingRad;
+
+  const nextAsteroids = (state.asteroids || []).map((ast) => {
+    let ax = fromQ16(qAdd(ast.xQ16, qMul(ast.vxQ16, dtQ16)));
+    let ay = fromQ16(qAdd(ast.yQ16, qMul(ast.vyQ16, dtQ16)));
+    if (ax < 30) ax += SECTOR_W - 60;
+    if (ax > SECTOR_W - 30) ax -= SECTOR_W - 60;
+    if (ay < 30) ay += SECTOR_H - 60;
+    if (ay > SECTOR_H - 30) ay -= SECTOR_H - 60;
+    return { ...ast, xQ16: toQ16(ax), yQ16: toQ16(ay) };
+  });
+
+  let shield = state.ship.shield;
+  let log = state.lastEventLog;
+  const nextShots = (state.enemyShots || [])
+    .map((shot) => ({ ...shot, ticks: shot.ticks - 1 }))
+    .filter((shot) => shot.ticks > 0);
+
+  const nextRaiders = (state.raiders || []).map((r) => {
+    let rx = fromQ16(r.xQ16);
+    let ry = fromQ16(r.yQ16);
+    const dx = fx - rx;
+    const dy = fy - ry;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < 260 && dist > 68) {
+      const chaseSpeed = state.sphereMode ? 1.15 : 0.85;
+      rx += (dx / dist) * chaseSpeed;
+      ry += (dy / dist) * chaseSpeed;
+    }
+
+    let cd = Math.max(0, (r.cooldown || 0) - 1);
+    if (dist < 230 && cd === 0) {
+      cd = state.sphereMode ? 55 : 75;
+      const baseDmg = state.sphereMode ? 12 : 8;
+      const mitigated = Math.max(2, Math.round(baseDmg / state.stance.shieldMult));
+      shield = Math.max(0, shield - mitigated);
+      nextShots.push({ x1: rx, y1: ry, x2: fx, y2: fy, ticks: 10 });
+      log = "Warning: Raider plasma hit! Shields -" + mitigated + " (" + shield + " remaining).";
+    }
+
+    return { ...r, xQ16: toQ16(rx), yQ16: toQ16(ry), cooldown: cd };
+  });
+
+  if (shield === 0) {
+    const repairFee = Math.min(state.credits, 100);
+    const maxShield = getEffectiveMaxShield(state);
+    return {
+      ...state,
+      tick,
+      credits: state.credits - repairFee,
+      docked: true,
+      ship: { xQ16: toQ16(100), yQ16: toQ16(210), vxQ16: 0, vyQ16: 0, headingRad: 0, shield: maxShield },
+      asteroids: nextAsteroids,
+      raiders: nextRaiders,
+      enemyShots: [],
+      lastEventLog: "EMERGENCY TOW: Shields depleted! Rescued to " + state.system.name + " Station (-" + repairFee + " CR).",
+    };
+  }
+
+  return {
+    ...state,
+    tick,
+    ship: { ...state.ship, xQ16: x, yQ16: y, vxQ16: vx, vyQ16: vy, headingRad, shield },
+    asteroids: nextAsteroids,
+    raiders: nextRaiders,
+    enemyShots: nextShots,
+    laserBeamTicks: Math.max(0, state.laserBeamTicks - 1),
+    lastEventLog: log,
+  };
 }
-let cd = Math.max(0, (r.cooldown || 0) - 1);
-if (dist < 230 && cd === 0) {
-cd = state.sphereMode ? 55 : 75;
-const baseDmg = state.sphereMode ? 12 : 8;
-const mitigated = Math.max(2, Math.round(baseDmg / state.stance.shieldMult));
-shield = Math.max(0, shield - mitigated);
-nextShots.push({ x1: rx, y1: ry, x2: fx, y2: fy, ticks: 10 });
-log = "Warning: Raider plasma hit! Shields -" + mitigated + " (" + shield + " remaining).";
-}
-return { ...r, xQ16: toQ16(rx), yQ16: toQ16(ry), cooldown: cd };
-});
-if (shield === 0) {
-const repairFee = Math.min(state.credits, 100);
-const maxShield = getEffectiveMaxShield(state);
-return {
-...state,
-tick,
-credits: state.credits - repairFee,
-docked: true,
-ship: { xQ16: toQ16(100), yQ16: toQ16(210), vxQ16: 0, vyQ16: 0, headingRad: 0, shield: maxShield },
-enemyShots: [],
-lastEventLog: "EMERGENCY TOW: Shields depleted! Rescued to " +  + " Station (-" + repairFee + " CR).",
-};
-}
-return {
-...state,
-tick,
-ship: { ...state.ship, xQ16: x, yQ16: y, vxQ16: vx, vyQ16: vy, headingRad, shield },
-asteroids: nextAsteroids,
-raiders: nextRaiders,
-enemyShots: nextShots,
-laserBeamTicks: Math.max(0, state.laserBeamTicks - 1),
-lastEventLog: log,
-};
-}
+
 export function buildCommanderReceipt(state) {
 const payload = {
 schema: "ndh.ueue.outer.rim.elite.v1",
