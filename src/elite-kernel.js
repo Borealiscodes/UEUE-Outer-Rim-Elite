@@ -332,7 +332,7 @@ const baseDmg = state.sphereMode ? 12 : 8;
 const mitigated = Math.max(2, Math.round(baseDmg / state.stance.shieldMult));
 shield = Math.max(0, shield - mitigated);
 nextShots.push({ x1: rx, y1: ry, x2: fx, y2: fy, ticks: 10 });
-log = Warning: Raider plasma hit! Shields -${mitigated} (${shield} remaining).;
+log = `Warning: Raider plasma hit! Shields -${mitigated} (${shield} remaining).`;
 }
 return { ...r, xQ16: toQ16(rx), yQ16: toQ16(ry), cooldown: cd };
 });
