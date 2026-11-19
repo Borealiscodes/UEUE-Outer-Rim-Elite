@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>UEUE Outer Rim Elite — Space Trading, Mining, Factions &amp; Transhuman Sleeves</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🚀 UEUE Outer Rim Elite <span class="badge">UEUE v1.2 • Q16.16</span></h1>
+    <div id="hud-credits">Credits: 500 CR | Cargo: 2/8t</div>
+  </header>
+
+  <div class="sub-hud">
+    <span id="hud-system">System: New Kowloon Spire</span>
+    <span id="hud-loadout">Hull: Dart Courier | Sleeve: Biological Explorer</span>
+  </div>
+
+  <main class="elite-layout">
+    <section class="cockpit-card">
+      <div id="event-log" class="dispatch-bar">L1 Dispatch: Neon rain streaks across New Kowloon's orbital ring.</div>
+      <canvas id="sector-canvas" width="680" height="420"></canvas>
+
+      <div class="flight-controls">
+        <button id="btn-fire">🔫 Fire Mining / Pulse Lasers (Space)</button>
+        <button id="btn-dock">🛰️ Dock at Station</button>
+        <button id="btn-stance">⚔️ Stance: Balanced</button>
+        <button id="btn-sphere">✨ Sphere Mode: OFF</button>
+        <button id="btn-audio">Sound: Muted</button>
+      </div>
+
+      <div class="station-grid">
+        <div class="panel-box">
+          <h3>L5 Commodity Market (Dock Required)</h3>
+          <div id="market-list"></div>
+        </div>
+        <div class="panel-box">
+          <h3>L2/L6 Shipyard &amp; Transhuman Sleeves</h3>
+          <div id="shipyard-list"></div>
+          <hr />
+          <div id="sleeve-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="nav-card">
+      <h3>L3/L8 Hyperspace Galaxy Map</h3>
+      <div id="galaxy-list" class="jump-list"></div>
+
+      <h3>L4 Faction Standing Matrix</h3>
+      <div id="faction-list"></div>
+
+      <h3>Commander Log Receipt (SHA-256)</h3>
+      <button id="btn-receipt">Generate Commander Receipt</button>
+      <textarea id="receipt-output" rows="6" readonly placeholder="Tap to generate SHA-256 log..."></textarea>
+    </aside>
+  </main>
+
+  <script type="module" src="src/elite-app.js"></script>
+</body>
+</html>
