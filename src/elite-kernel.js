@@ -1,9 +1,3 @@
-/**
- * src/elite-kernel.js — UEUE v1.2 Q16.16 Flight, Mining, Trading, Stance Combat & Sphere Mode Kernel (Ledger 1)
- *
- * Signed-off-by: Borealis Serenity Hedling <chguard-sentinel@vaked.dev>
- */
-
 import { toQ16, fromQ16, qAdd, qMul, createSeededRng, sha256Hex } from "./core.js";
 import {
   STAR_SYSTEMS,
@@ -34,6 +28,7 @@ function spawnSectorEntities(system, rng, sphereChaos = false) {
     xQ16: toQ16(460 + (rng() % 160)),
     yQ16: toQ16(80 + i * 110),
     hp: 45,
+    cooldown: 35 + i * 20,
   }));
 
   return { asteroids, raiders };
@@ -57,7 +52,7 @@ export function createCommanderState(seed = 20261119) {
     stanceIndex: 0,
     stance: COMBAT_STANCES.at(0),
     docked: false,
-    sphereMode: false, // UEUE L10: Sparkle + Chaos overlay
+    sphereMode: false,
     ship: {
       xQ16: toQ16(140),
       yQ16: toQ16(210),
@@ -70,6 +65,7 @@ export function createCommanderState(seed = 20261119) {
     reputation: { corporate: 10, guild: 15, resistance: 5, syndicate: 0 },
     asteroids,
     raiders,
+    enemyShots: [], // { x1, y1, x2, y2, ticks }
     laserBeamTicks: 0,
     lastEventLog: system.dispatch,
   };
@@ -77,6 +73,11 @@ export function createCommanderState(seed = 20261119) {
 
 export function getCargoUsed(cargo) {
   return Object.values(cargo).reduce((sum, n) => sum + (n | 0), 0);
+}
+
+export function getEffectiveMaxShield(state) {
+  const sleeveMult = state.sleeve.id === "combat" ? 1.35 : 1.0;
+  return Math.round(state.hull.maxShield * sleeveMult);
 }
 
 export function getCommodityPrice(state, commodityId) {
@@ -90,14 +91,16 @@ export function getCommodityPrice(state, commodityId) {
 
 export function toggleDocking(state) {
   const nextDocked = !state.docked;
+  const maxShield = getEffectiveMaxShield(state);
   return {
     ...state,
     docked: nextDocked,
+    enemyShots: [],
     ship: nextDocked
-      ? { ...state.ship, vxQ16: 0, vyQ16: 0, shield: state.hull.maxShield }
+      ? { ...state.ship, vxQ16: 0, vyQ16: 0, shield: maxShield }
       : state.ship,
     lastEventLog: nextDocked
-      ? `Docked at ${state.system.name} Orbital Station. Shields recharged.`
+      ? `Docked at ${state.system.name} Orbital Station. Shields recharged (${maxShield}/${maxShield}).`
       : `Launched into ${state.system.name} space.`,
   };
 }
@@ -161,11 +164,10 @@ export function equipShipHull(state, hullId) {
   const target = SHIP_HULLS.find((h) => h.id === hullId);
   if (!target || target.id === state.hull.id || state.credits < target.cost) return state;
 
+  const nextState = { ...state, credits: state.credits - target.cost, hull: target };
   return {
-    ...state,
-    credits: state.credits - target.cost,
-    hull: target,
-    ship: { ...state.ship, shield: target.maxShield },
+    ...nextState,
+    ship: { ...nextState.ship, shield: getEffectiveMaxShield(nextState) },
     lastEventLog: `Shipyard Transfer: Commissioned ${target.name} (${target.cargoCap}t cargo).`,
   };
 }
@@ -175,10 +177,10 @@ export function swapPilotSleeve(state, sleeveId) {
   const target = PILOT_SLEEVES.find((s) => s.id === sleeveId);
   if (!target || target.id === state.sleeve.id || state.credits < target.cost) return state;
 
+  const nextState = { ...state, credits: state.credits - target.cost, sleeve: target };
   return {
-    ...state,
-    credits: state.credits - target.cost,
-    sleeve: target,
+    ...nextState,
+    ship: { ...nextState.ship, shield: getEffectiveMaxShield(nextState) },
     lastEventLog: `L2/L6 Mindstate Transfer complete: Resleeved into ${target.name}.`,
   };
 }
@@ -191,7 +193,6 @@ export function hyperspaceJump(state, targetSystemIndex) {
   const rng = createSeededRng((state.seed + idx * 9973 + state.tick) >>> 0);
   const { asteroids, raiders } = spawnSectorEntities(system, rng, state.sphereMode);
 
-  // Contraband scan check when entering Corporate systems with Neuro-Stims
   let credits = state.credits;
   let log = `Hyperspace jump complete: Arrived at ${system.name}.`;
   if (system.factionId === "corporate" && (state.cargo.stims || 0) > 0 && state.sleeve.id !== "stealth") {
@@ -209,6 +210,7 @@ export function hyperspaceJump(state, targetSystemIndex) {
     ship: { ...state.ship, xQ16: toQ16(120), yQ16: toQ16(210), vxQ16: 0, vyQ16: 0 },
     asteroids,
     raiders,
+    enemyShots: [],
     lastEventLog: log,
   };
 }
@@ -225,7 +227,6 @@ export function fireShipLasers(state) {
   let cargo = { ...state.cargo };
   let log = "Pulse lasers fired.";
 
-  // 1. Check Raider Combat Hits
   const nextRaiders = [];
   for (const r of state.raiders) {
     const dist = Math.hypot(sx - fromQ16(r.xQ16), sy - fromQ16(r.yQ16));
@@ -244,7 +245,6 @@ export function fireShipLasers(state) {
     }
   }
 
-  // 2. Check Asteroid Mining Yield
   const nextAsteroids = [];
   for (const ast of state.asteroids) {
     const dist = Math.hypot(sx - fromQ16(ast.xQ16), sy - fromQ16(ast.yQ16));
@@ -298,11 +298,8 @@ export function stepEliteFrame(state, thrustXQ16 = 0, thrustYQ16 = 0) {
   y = toQ16(fy);
 
   const speed = Math.hypot(fromQ16(vx), fromQ16(vy));
-  const headingRad = speed > 3 ? Math.atan2(fromQ16(vy), fromQ16(vx)) : state.ship.headingRad;
-
-  // Drift asteroids slowly across sector
-  const nextAsteroids = state.asteroids.map((ast) => {
-
+const headingRad = speed > 3 ? Math.atan2(fromQ16(vy), fromQ16(vx)) : state.ship.headingRad;
+const nextAsteroids = ((ast) => {
 let ax = fromQ16(qAdd(ast.xQ16, qMul(ast.vxQ16, dtQ16)));
 let ay = fromQ16(qAdd(ast.yQ16, qMul(ast.vyQ16, dtQ16)));
 if (ax < 30) ax += SECTOR_W - 60;
@@ -311,21 +308,67 @@ if (ay < 30) ay += SECTOR_H - 60;
 if (ay > SECTOR_H - 30) ay -= SECTOR_H - 60;
 return { ...ast, xQ16: toQ16(ax), yQ16: toQ16(ay) };
 });
+// Raiders pursue player when within 250 px and fire plasma bolts back!
+let shield = state.ship.shield;
+let log = state.lastEventLog;
+const nextShots = state.enemyShots
+.map((s) => ({ ...s, ticks: s.ticks - 1 }))
+.filter((s) => s.ticks > 0);
+const nextRaiders = ((r) => {
+let rx = fromQ16(r.xQ16);
+let ry = fromQ16(r.yQ16);
+const dx = fx - rx;
+const dy = fy - ry;
+const dist = Math.hypot(dx, dy);
+if (dist < 260 && dist > 68) {
+const chaseSpeed = state.sphereMode ? 1.15 : 0.85;
+rx += (dx / dist) * chaseSpeed;
+ry += (dy / dist) * chaseSpeed;
+}
+let cd = Math.max(0, (r.cooldown || 0) - 1);
+if (dist < 230 && cd === 0) {
+cd = state.sphereMode ? 55 : 75;
+const baseDmg = state.sphereMode ? 12 : 8;
+const mitigated = Math.max(2, Math.round(baseDmg / state.stance.shieldMult));
+shield = Math.max(0, shield - mitigated);
+nextShots.push({ x1: rx, y1: ry, x2: fx, y2: fy, ticks: 10 });
+log = Warning: Raider plasma hit! Shields -${mitigated} (${shield} remaining).;
+}
+return { ...r, xQ16: toQ16(rx), yQ16: toQ16(ry), cooldown: cd };
+});
+// Emergency Stasis Tow to Coriolis Station if shields reach 0
+if (shield === 0) {
+const repairFee = Math.min(state.credits, 100);
+const maxShield = getEffectiveMaxShield(state);
 return {
 ...state,
 tick,
-ship: { ...state.ship, xQ16: x, yQ16: y, vxQ16: vx, vyQ16: vy, headingRad },
+credits: state.credits - repairFee,
+docked: true,
+ship: { xQ16: toQ16(100), yQ16: toQ16(210), vxQ16: 0, vyQ16: 0, headingRad: 0, shield: maxShield },
+enemyShots: [],
+lastEventLog: EMERGENCY TOW: Shields depleted! Rescued to ${} Station (-${repairFee} CR).,
+};
+}
+return {
+...state,
+tick,
+ship: { ...state.ship, xQ16: x, yQ16: y, vxQ16: vx, vyQ16: vy, headingRad, shield },
 asteroids: nextAsteroids,
+raiders: nextRaiders,
+enemyShots: nextShots,
 laserBeamTicks: Math.max(0, state.laserBeamTicks - 1),
+lastEventLog: log,
 };
 }
 export function buildCommanderReceipt(state) {
 const payload = {
 schema: "ndh.ueue.outer.rim.elite.v1",
-system: state.system.id,
+system: ,
 credits: state.credits,
-hull: state.hull.id,
-sleeve: state.sleeve.id,
+shield: state.ship.shield,
+hull: ,
+sleeve: ,
 sphereMode: state.sphereMode,
 cargo: state.cargo,
 reputation: state.reputation,

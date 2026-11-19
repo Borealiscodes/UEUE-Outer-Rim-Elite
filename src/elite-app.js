@@ -17,6 +17,7 @@ import {
   SECTOR_H,
   createCommanderState,
   getCargoUsed,
+  getEffectiveMaxShield,
   getCommodityPrice,
   toggleDocking,
   toggleSphereMode,
@@ -269,6 +270,7 @@ function initEliteApp() {
       accumulator -= FIXED_DT_MS;
     }
 
+    renderStationPanels();
     if (ctx) renderSpaceSector(ctx, state);
     requestAnimationFrame(loop);
   }
