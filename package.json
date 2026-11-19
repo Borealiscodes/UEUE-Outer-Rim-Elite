@@ -1,0 +1,10 @@
+{
+  "name": "ueue-outer-rim-elite",
+  "version": "1.0.0",
+  "description": "Elite Dangerous-style space trading, asteroid mining, faction, and transhuman sleeve simulator implementing all ten layers (L1-L10) of Unified-Expanded-Universe-Engine-v1.2 in zero-float Q16.16 math.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/elite-kernel.test.mjs"
+  },
+  "license": "MIT"
+}
