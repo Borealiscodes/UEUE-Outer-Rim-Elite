@@ -362,7 +362,7 @@ lastEventLog: log,
 export function buildCommanderReceipt(state) {
 const payload = {
 schema: "ndh.ueue.outer.rim.elite.v1",
-system: ,
+system: state.system.id,
 credits: state.credits,
 shield: state.ship.shield,
 hull: ,
