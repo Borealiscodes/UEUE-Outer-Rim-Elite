@@ -1,83 +1,82 @@
-> ### 🏗️ UNDER CONSTRUCTION — UEUE v1.2 OUTER RIM SPACE TRADING, MINING & FACTION SIMULATOR (PRE-ALPHA)
-> **Status:** Active Architectural Scaffolding & Space-Sim Prototyping • Zero-Float `Q16.16` • Zero Dependencies  
+> ### ✅ RELEASE v1.0.0 — UEUE v1.2 BASELINE PROOF OF CONCEPT (`3/3` PASSING)
+> **Status:** `v1.0.0` Baseline Proof of Concept • Zero-Float `Q16.16` • `UEUE v1.2` (`L1`–`L10`) Reference Prototype  
 > 
-> **Project Scope:** A playable *Elite Dangerous*–inspired top-down space trading, asteroid mining, faction, and transhuman sleeve simulation built directly on [`Unified-Expanded-Universe-Engine-v1.2.md`](https://github.com)—uniting all ten `UEUE v1.2` layers (`L1`–`L10`) in deterministic `Q16.16` integer physics (`Ledger 1`) and a read-only holographic canvas + ambient space synth (`Ledger 2`).
+> **Honest Scope & Prototype Caveat:** This `v1.0.0` release is a **minimalist baseline proof of concept** demonstrating how all ten layers (`L1`–`L10`) of [`Unified-Expanded-Universe-Engine-v1.2.md`](https://github.com) can run together in zero-dependency `Q16.16` integer math. Because it is a foundational baseline prototype, **the procedural WebAudio space synth is bare-bones/repetitive, the flight and combat gameplay loop is intentionally simple, and the commodity economy and faction standing rules are lightweight abstractions** rather than a full-scale 4X space simulation.
 
-# 🚀 UEUE Outer Rim Elite — Space Trading, Asteroid Mining, Factions & Transhuman Sleeves
+# 🚀 UEUE Outer Rim Elite — Baseline Proof of Concept (`UEUE v1.2` Space Sim)
 
-**An interactive, zero-dependency *Elite Dangerous*–style space simulator implementing all ten layers (`L1`–`L10`) of the *Unified Expanded Universe Engine (`UEUE v1.2`)*—fly across a 5-system Outer Rim sector, mine asteroids, trade dynamic commodities, swap transhuman pilot sleeves and starship hulls, shift faction standing, and toggle *Sphere Mode* (`Sparkle + Chaos`).**
+**A zero-dependency, *Elite Dangerous*–inspired baseline proof of concept implementing all ten layers (`L1`–`L10`) of the *Unified Expanded Universe Engine (`UEUE v1.2`)*—featuring `Q16.16` Newtonian flight, asteroid mining, pursuing Syndicate raiders with shield damage and emergency Coriolis station tows, simple station commodity trading, transhuman pilot sleeve swaps, and toggleable *Sphere Mode* (`Sparkle + Chaos`).**
 
 [![License: MIT](https://shields.io)](LICENSE)
-[![Status: Pre-Alpha Scaffolding](https://shields.io)](#-build-roadmap-v01--v10)
+[![Status: v1.0.0 Baseline PoC](https://shields.io)](#-quickstart--verification)
 [![Architecture: UEUE v1.2 L1-L10](https://shields.io)](#-ueue-v12-layer-by-layer-gameplay-integration)
-[![Math: Q16.16 Fixed-Point](https://shields.io)](#-repository-scaffolding)
+[![Tests: 3/3 Passing](https://shields.io)](#-quickstart--verification)
 
 ---
 
-## 🌌 `UEUE v1.2` Layer-by-Layer Gameplay Integration (`L1`–`L10`)
+## 📖 Companion Architecture Guide & Explainer Tile
 
-Every architectural layer specified in [`Unified-Expanded-Universe-Engine-v1.2.md`](https://github.com) maps to a concrete, playable mechanic:
+* **Layered Architecture Guide:** [`docs/ueue-outer-rim-architecture-guide.md`](docs/ueue-outer-rim-architecture-guide.md) — Maps each `UEUE v1.2` layer (`L1`–`L10`) to its concrete `Q16.16` implementation and APA references.
+* **Plain-Language Explainer Tile:** [`tiles/bill-nye-ueue-elite-explainer.md`](tiles/bill-nye-ueue-elite-explainer.md) — Altitude `A7` plain-language breakdown of Newtonian flight damping, supply-and-demand pricing, and sleeve multipliers.
 
-| `UEUE v1.2` Layer | Source Inspiration | Playable Space-Sim Mechanic |
+---
+
+## 🌌 `UEUE v1.2` Layer-by-Layer Baseline Integration (`L1`–`L10`)
+
+| `UEUE v1.2` Layer | Source Inspiration | Baseline Proof-of-Concept Mechanic |
 | :--- | :--- | :--- |
-| **L1: Narrative Substrate** | *Blade Runner* | Neon-noir station dispatches, corporate tariff alerts, and deep-space memory-fragment beacons. |
-| **L2 & L6: Transhuman Tech & Sleeves** | *Eclipse Phase* | Swap between **4 Pilot Sleeves** (*Biological Explorer*, *Synthetic Industrialist*, *Combat Morph*, *Stealth Cyber-Sleeve*) at any docked station to alter scan range, mining yield, combat output, and contraband stealth. |
-| **L3: Exploration Loop** | *Fallout* | Hyperspace jump between **5 Outer Rim Star Systems**, scan derelict anomalies, and salvage rare cargo. |
-| **L4: Faction Interaction Matrix** | *UEUE Matrix* | Dynamic reputation across **4 Competing Factions** (*Corporate Bloc*, *Outer Rim Merchant Guild*, *Resistance Cell*, *Orbital Syndicate*) affecting station tariffs and raider hostility. |
-| **L5: Outer Rim Economy System** | *Outer Rim* | Buy-low / sell-high station markets across **4 Commodities** (*Hydro-Cells*, *Refined Palladium*, *Neuro-Stims*, *Lanternway Shards*) driven by system supply/scarcity. |
-| **L7: Stylized Combat & Mining Loop** | *Stylized Combat* | Newtonian `Q16.16` space flight with Flight-Assist damping, mining lasers that fracture drifting asteroids into collectible ore, and **3 Tactical Stances** (*Balanced*, *Weapons Overcharge*, *Shield Fortify*). |
-| **L8 & L9: Cosmic & NDH Integration** | *D4–D9 Stability* | Harvest *Lanternway Shards* from dimensional fractures while `Q16.16` fixed-point math (`D4–D6`) prevents coordinate drift (`D10–D11` governance sealed in Sphere Mode). |
-| **L10: Sphere Mode Overlay** | *Sparkle + Chaos* | Toggleable **Sphere Mode**: **Sparkle** projects high-profit trade vectors and anomaly trails; **Chaos** spawns emergent cosmic fractures and surprise pirate ambushes. |
+| **L1: Narrative Substrate** | *Blade Runner* | Neon-noir station dispatches, corporate tariff warnings, and combat status logs. |
+| **L2 & L6: Transhuman Tech & Sleeves** | *Eclipse Phase* | Swap between **4 Pilot Sleeves** (*Biological Explorer*, *Synthetic Industrialist*, *Combat Morph*, *Stealth Cyber-Sleeve*) at any docked station to modify scan range, mining yield, combat output, and contraband stealth. |
+| **L3: Exploration Loop** | *Fallout* | Hyperspace jump across **5 Outer Rim Star Systems** (*New Kowloon Spire*, *Brú-9 Asteroid Belt*, *Tyrell Orbital Refinery*, *Lethe Black Market*, *Lanternway Rift*). |
+| **L4: Faction Interaction Matrix** | *UEUE Matrix* | Lightweight reputation counters across **4 Competing Factions** (*Corporate Bloc*, *Outer Rim Merchant Guild*, *Resistance Cell*, *Orbital Syndicate*) granting up to `15%` station trade discounts. |
+| **L5: Outer Rim Economy System** | *Outer Rim* | Simple static-multiplier buy/sell markets across **4 Commodities** (*Hydro-Cells*, *Refined Palladium*, *Neuro-Stims*, *Lanternway Shards*). |
+| **L7: Stylized Combat & Mining Loop** | *Stylized Combat* | `Q16.16` flight-assist thrust, asteroid fracturing, pursuing raiders firing crimson plasma bolts, **3 Tactical Stances** (*Balanced*, *Weapons Overcharge*, *Shield Fortify*), and emergency Coriolis station tow at `0` shields. |
+| **L8 & L9: Cosmic & NDH Integration** | *D4–D9 Stability* | Harvest *Lanternway Shards* while `Q16.16` integer math (`D4–D6`) prevents coordinate drift (`D10–D11` governance sealed in Sphere Mode). |
+| **L10: Sphere Mode Overlay** | *Sparkle + Chaos* | Toggleable **Sphere Mode**: *Sparkle* draws target vectors to asteroids while *Chaos* increases raider speed, plasma damage, and bounties. |
 
 ---
 
-## 🪐 Outer Rim Sector, Starships & Pilot Sleeves
-
-* **5 Star Systems:** *New Kowloon Spire* (Corporate Bloc), *Brú-9 Asteroid Belt* (Merchant Guild), *Tyrell Orbital Refinery* (Corporate Bloc), *Lethe Black Market* (Orbital Syndicate), and *Lanternway Rift* (Resistance Cell).
-* **3 Upgradable Starship Hulls:**
-  * **Dart Courier** (`8t` cargo • agile light scout)
-  * **Viper Multi-Role** (`16t` cargo • balanced combat/mining interceptor)
-  * **Taurus Heavy Hauler** (`32t` cargo • deep-core mining & bulk freighter)
-* **4 Transhuman Pilot Sleeves:**
-  * **Biological Explorer** (`+35%` anomaly & scanner range)
-  * **Synthetic Industrialist** (`+40%` mining laser yield)
-  * **Combat Morph** (`+35%` laser damage & shield capacity)
-  * **Stealth Cyber-Sleeve** (bypasses Corporate & Syndicate contraband scans)
-
----
-
-## 📁 Repository Scaffolding
+## 📁 Repository Structure
 
 ```text
 UEUE-Outer-Rim-Elite/
-├── index.html                        # Space sector viewport + Docked Station HUD (Market, Shipyard/Sleeves, Factions, Map)
-├── style.css                         # Elite-inspired amber/cyan holographic cockpit & neon-noir station UI
-├── package.json                      # Zero-dependency ESM manifest (`npm test` -> `node --test`)
-├── LICENSE                           # MIT License
-├── README.md                         # UEUE v1.2 layer mapping, systems/ships overview & build roadmap
+├── index.html                                    # Space sector viewport + Docked Station HUD (Market, Shipyard/Sleeves, Factions, Map)
+├── style.css                                     # Elite-inspired amber/cyan holographic cockpit & neon-noir station UI
+├── package.json                                  # Zero-dependency ESM manifest (`npm test` -> `node --test`)
+├── LICENSE                                       # MIT License
+├── README.md                                     # Baseline PoC scope, UEUE v1.2 layer mapping & quickstart
+├── docs/
+│   └── ueue-outer-rim-architecture-guide.md      # Technical mapping of UEUE v1.2 (L1-L10) with APA references
+├── tiles/
+│   └── bill-nye-ueue-elite-explainer.md          # Altitude A7 plain-language explainer of flight, market & sleeve math
 ├── src/
-│   ├── core.js                       # Zero-float Q16.16 fixed-point math, Mulberry32 PRNG & synchronous SHA-256
-│   ├── ueue-universe-data.js         # 5 Star Systems, 4 Factions, 4 Commodities, 3 Ship Hulls & 4 Pilot Sleeves
-│   ├── elite-kernel.js               # Q16.16 flight physics, asteroid mining, stance combat, trading & Sphere Mode
-│   ├── synthwave-space-audio.js      # Mute-by-default WebAudio ambient space synth, mining beam & jump chimes
-│   ├── cockpit-renderer.js           # Top-down space sector renderer (ship, asteroids, raiders, Sparkle/Chaos HUD)
-│   └── elite-app.js                  # 60 Hz flight loop, touch/WASD controls & Docked Station tabs
+│   ├── core.js                                   # Zero-float Q16.16 fixed-point math, Mulberry32 PRNG & synchronous SHA-256
+│   ├── ueue-universe-data.js                     # 5 Star Systems, 4 Factions, 4 Commodities, 3 Ship Hulls & 4 Pilot Sleeves
+│   ├── elite-kernel.js                           # Q16.16 flight, mining, raider combat, trading & Sphere Mode (Ledger 1)
+│   ├── synthwave-space-audio.js                  # Minimal mute-by-default WebAudio drone & laser/jump effects (Ledger 2)
+│   ├── cockpit-renderer.js                       # Top-down space sector renderer (ship, asteroids, raiders, plasma & Sphere Mode)
+│   └── elite-app.js                              # 60 Hz flight loop, touch/WASD controls & Docked Station tabs
 └── test/
-    └── elite-kernel.test.mjs         # Built-in `node --test` suite verifying mining, trading, sleeves & Sphere Mode
+    └── elite-kernel.test.mjs                     # Built-in `node --test` suite verifying mining, trading, sleeves & Sphere Mode
 ```
 
 ---
 
-## 🛠️ Build Roadmap (`v0.1` → `v1.0`)
+## 🚀 Quickstart & Verification
 
-* **`v0.1` (`Q16.16` Flight, Mining & Trading Kernel):** Implement Newtonian flight-assist physics, asteroid mining yield, commodity market pricing, and faction reputation (`Ledger 1`).
-* **`v0.2` (Transhuman Sleeves, Ship Hulls & Tactical Stances):** Add sleeve mindstate swaps (`Biological`, `Synthetic`, `Combat`, `Stealth`), ship upgrades, and 3-stance raider combat (`Ledger 1`).
-* **`v0.3` (Holographic Space Renderer & Sphere Mode Overlay):** Render star systems, drifting asteroids, pirate raiders, and toggleable *Sparkle + Chaos* telemetry (`Ledger 2`).
-* **`v1.0` (Ambient Space Synth, Commander Receipts & Full Verification):** Wire mute-by-default WebAudio synthesis, `SHA-256` commander logs, and `node --test` verification.
+```bash
+# 1. Run deterministic mining, trading, sleeve & Sphere Mode tests (3/3 passing)
+node --test test/elite-kernel.test.mjs
+
+# 2. Launch locally over IPv4 in browser
+python3 -m http.server 8085 --bind 127.0.0.1
+```
+
+Open **`http://127.0.0.1:8085`**, fly with `WASD` or touch-steer, fire mining/combat lasers with `Spacebar`, dock at orbital stations to trade commodities and resleeve your pilot, jump across all **5 Outer Rim systems**, and toggle **Sphere Mode**.
 
 ---
 
 ## 🤝 Provenance & License
 
-* **Architectural Lineage:** Built directly on [`Borealiscodes/NDH-Core/NDH-Geometry-Suite/v1.2/Expanded-Universe/Unified-Expanded-Universe-Engine-v1.2.md`](https://github.com) and [`Borealiscodes/ndh-game-dev-kit`](https://github.com).
+* **Architectural Lineage:** Built with AI assistance in County Dublin, Ireland, on [`Borealiscodes/NDH-Core/NDH-Geometry-Suite/v1.2/Expanded-Universe/Unified-Expanded-Universe-Engine-v1.2.md`](https://github.com) and [`Borealiscodes/ndh-game-dev-kit`](https://github.com).
 * **Author & License:** Borealis Serenity Hedling (`NDH-RESEARCH-PILOT` • County Dublin, Ireland) • MIT License • `Signed-off-by: Borealis Serenity Hedling <chguard-sentinel@vaked.dev>`.
